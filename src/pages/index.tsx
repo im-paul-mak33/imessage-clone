@@ -1,23 +1,41 @@
-import { sign } from 'crypto';
-import type { NextPage } from 'next';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import Auth from '@/components/Auth/Auth';
+import Chat from '@/components/Chat/Chat';
+// import Dashboard from '@/components/Dashboard/Dashboard';
+
+import { Box } from '@chakra-ui/react';
+import type { NextPage, NextPageContext } from 'next';
+import { getSession, useSession } from 'next-auth/react';
+import { Session } from 'next-auth';
 
 const Home: NextPage = () => {
-  const { data } = useSession();
+  const { data: session } = useSession();
 
-  console.log('Here is the data that is being sent to the server: ', data);
+  console.log('Here is the data that is being sent to the server: ', session);
+
+  const reloadSession = () => {};
 
   return (
     <>
-      {data?.user ? (
-        <button onClick={() => signOut()}>Sign Out</button>
-      ) : (
-        <button onClick={() => signIn('google')}>Sign In</button>
-      )}
-
-      {data ? <p>Signed in as {data.user?.name}</p> : <p>Not signed in</p>}
+      {/* {(session?.user?.name = "Paul") ? <Dashboard /> : <Auth />} */}
+      <Box>
+        {session?.user?.username ? (
+          <Chat />
+        ) : (
+          <Auth session={session} reloadSession={reloadSession} />
+        )}
+      </Box>
     </>
   );
 };
+
+export async function getServerSideProps(context: NextPageContext) {
+  const session = await getSession(context);
+
+  return {
+    props: {
+      session,
+    },
+  };
+}
 
 export default Home;
